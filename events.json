@@ -1,0 +1,246 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Event data download API",
+    "version": "1.0",
+    "description": "API for downloading event core datasets",
+    "termsOfService": "https://www.ala.org.au/terms-of-use/",
+    "contact": {
+      "email": "support@ala.org.au",
+      "name": "ALA",
+      "url": "https://www.ala.org.au"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.ala.org.au/{basePath}",
+      "variables": {
+        "basePath": {
+          "default": "event"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/dataset/{datasetID}": {
+      "get": {
+        "responses": {
+          "default": {
+            "description": "Retrieves the details of a full dataset export",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Success": {
+                    "value": "{\n  \"url\": \"https://s3.url\",\n  \"fileSizeInMB\": \"9639.84\",\n  \"modified\": \"2023-02-27 22:55:15+00:00\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "datasetID",
+          "in": "path",
+          "description": "The id for the dataset to retrieve details",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/download/{requestID}": {
+      "get": {
+        "responses": {
+          "default": {
+            "description": "Retrieve export details of event archive for dataset",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Success": {
+                    "value": "{\n  \"datasetId\": \"dr18393\",\n  \"predicate\": {\n    \"type\": \"and\",\n    \"predicates\": [\n      {\n        \"type\": \"in\",\n        \"key\": \"datasetKey\",\n        \"values\": [\n          \"dr18393\"\n        ]\n      }\n    ]\n  },\n  \"status\": \"COMPLETE\",\n  \"startTime\": \"2023-02-10T05:35:06.402272+00:00\",\n  \"finishTime\": \"2023-02-10T05:44:17.696735+00:00\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "requestID",
+          "in": "path",
+          "description": "Generated path parameter for requestID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/download": {
+      "post": {
+        "requestBody": {
+          "description": "A JSON object containing the download request include query predicate",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/DownloadRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Default response for POST /download",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Success": {
+                    "value": "{\"requestID\": \"fb2bb9d8-3ef7-47c9-a37a-0827160cea81\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ALA_CAS": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DownloadRequest": {
+        "description": "A download request",
+        "type": "object",
+        "properties": {
+          "datasetId": {
+            "type": "string",
+            "description": "The ID of the dataset to download"
+          },
+          "creator": {
+            "type": "string",
+            "description": "The name of the creator"
+          },
+          "notificationAddresses": {
+            "type": "string",
+            "description": "The email addresses to send success/failure messages to"
+          },
+          "predicate": {
+            "type": "object",
+            "$ref": "#/components/schemas/PredicateQuery",
+            "description": "The query predicate"
+          },
+          "eventQueryUrl": {
+            "type": "string",
+            "description": "The URL of the query"
+          }
+        },
+        "required": [
+          "datasetId",
+          "creator",
+          "notificationAddresses",
+          "predicate",
+          "eventQueryUrl"
+        ]
+      },
+      "PredicateQuery": {
+        "description": "A query constructed by a type and an array of predicate",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of operation",
+            "enum": [
+              "and",
+              "or"
+            ]
+          },
+          "predicates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Predicate"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "predicates"
+        ]
+      },
+      "Predicate": {
+        "description": "A single predicate",
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The field to query",
+            "enum": [
+              "datasetKey",
+              "taxonKey",
+              "locationID",
+              "countryCode",
+              "year",
+              "month",
+              "samplingProtocol",
+              "stateProvince",
+              "eventHierarchy",
+              "eventTypeHierarchy",
+              "eventType",
+              "measurementOfFactTypes"
+            ]
+          },
+          "type": {
+            "description": "The type of predicate",
+            "type": "string",
+            "enum": [
+              "equals",
+              "like",
+              "lessThan",
+              "lessThanOrEquals",
+              "greaterThan",
+              "greaterThanOrEquals",
+              "range",
+              "in",
+              "not",
+              "isNotNull",
+              "isNull"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "description": "The value to use in the query"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The array of values to use in the query"
+          }
+        },
+        "required": [
+          "key",
+          "type",
+          "value | values"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ALA_CAS": {
+        "type": "oauth2",
+        "flows": {}
+      }
+    }
+  }
+}
