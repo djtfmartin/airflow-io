@@ -16,7 +16,7 @@ def lambda_handler(event, context):
 
     s3 = boto3.client('s3')
 
-    file_key = "dwca-exports/ " + dataset_id + ".zip"
+    file_key = "dwca-exports/" + dataset_id + ".zip"
 
     # create pre-signed URL and add to JSON
     url = s3.generate_presigned_url(
