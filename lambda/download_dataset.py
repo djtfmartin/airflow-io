@@ -19,7 +19,7 @@ def lambda_handler(event, context):
     conf = json.dumps(supplied_conf)
 
     mwaa_env_name = os.environ['MWAA_ENVIRONMENT']
-    dag_name = 'Export_event_core'
+    dag_name = os.environ['DAG_ID']
     client = boto3.client('mwaa')
 
     mwaa_cli_token = client.create_cli_token(Name=mwaa_env_name)
