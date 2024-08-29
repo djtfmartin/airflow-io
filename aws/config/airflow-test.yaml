@@ -1,0 +1,10 @@
+Project:
+  Name: ALA-events
+  Stage: dev
+
+Stack:
+  Downloads:
+    Name: Downloads
+    Parameters:
+      mwaaEnv: production-2023 
+      dagId: Export_event_core
